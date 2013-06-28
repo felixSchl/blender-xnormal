@@ -15,7 +15,7 @@ if "bpy" in locals():
     imp.reload(MapTypeSettings)
 else:
     from . import MapTypeSettings
-	
+
 import bpy
 from bpy.props import *
 from bpy.types import Panel, Operator
@@ -23,12 +23,14 @@ from bpy.utils import register_class, unregister_class
 import os
 import math
 
+
 def bool2str(boolean):
     if boolean:
         return "true"
     else:
         return "false"
     
+
 def ensure_dir(directory):
     if not os.path.exists(directory):
         try:
@@ -36,6 +38,7 @@ def ensure_dir(directory):
             return True
         except:
             return False
+
 
 # Add settings to scene
 class BakeXNormalSettings(bpy.types.PropertyGroup):
@@ -142,13 +145,13 @@ class BakeXNormalSettings(bpy.types.PropertyGroup):
                                  )
 
     import tempfile
-    #homedir = os.path.expanduser('~')
     homedir = tempfile.gettempdir()
     meshdir = os.path.join(homedir, 'xnormal_meshes')
     lowdir = os.path.join(meshdir, 'low.obj')
     cagedir = os.path.join(meshdir, 'cage.obj')
     highdir = os.path.join(meshdir, 'high.obj')
     outdir = os.path.join(meshdir, 'out.tga')
+
     # Output
     output = StringProperty(name = 'Output path',
                             description = 'The path of the output image. The given extension determines the file type!',
@@ -217,6 +220,7 @@ class BakeXNormalSettings(bpy.types.PropertyGroup):
 register_class(BakeXNormalSettings)
 bpy.types.Scene.xnormal_settings = PointerProperty(type = BakeXNormalSettings)
 
+
 class OBJECT_OP_open_bake_dir(bpy.types.Operator):
     bl_idname = 'object.open_bake_dir'
     bl_label = 'Open bakes directory'
@@ -227,6 +231,7 @@ class OBJECT_OP_open_bake_dir(bpy.types.Operator):
         directory, filename = os.path.split(output)
         os.system('explorer.exe ' + directory)
         return {'FINISHED'}
+
 
 class Export_for_xnormal(Operator): 
     bl_label = 'Export for xNormal'
@@ -255,7 +260,8 @@ class Export_for_xnormal(Operator):
                                  keep_vertex_order = True,
                                  )
         return {'FINISHED'}
-    
+
+
 class OBJECT_OT_export_for_xnormal_low(Export_for_xnormal):
     bl_idname = 'export_scene.obj_for_xnormal_low'
     bl_label = 'Export selected for xNormal (lowpoly)'
@@ -263,7 +269,8 @@ class OBJECT_OT_export_for_xnormal_low(Export_for_xnormal):
     def __init__(self):
         settings = bpy.context.scene.xnormal_settings
         self.filepath = settings.low_path
-        
+
+
 class OBJECT_OT_export_for_xnormal_cage(Export_for_xnormal):
     bl_idname = 'export_scene.obj_for_xnormal_cage'
     bl_label = 'Export selected for xNormal (Cage)'
@@ -271,7 +278,8 @@ class OBJECT_OT_export_for_xnormal_cage(Export_for_xnormal):
     def __init__(self):
         settings = bpy.context.scene.xnormal_settings
         self.filepath = settings.cage_path
-    
+
+
 class OBJECT_OT_export_for_xnormal_high(Export_for_xnormal):
     bl_idname = 'export_scene.obj_for_xnormal_high'
     bl_label = 'Export selected for xNormal (highpoly)'
@@ -280,8 +288,9 @@ class OBJECT_OT_export_for_xnormal_high(Export_for_xnormal):
         settings = bpy.context.scene.xnormal_settings
         self.filepath = settings.high_path
 
+
 class OBJECT_OT_bake_with_xnormal(Operator):
-    ''' Bake using the external xNormal normal map baking tool '''
+    """ Bake using the external xNormal normal map baking tool """
     bl_idname = 'object.bake_with_xnormal'
     bl_label = 'Bake'
     
@@ -365,7 +374,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
         xml_genmaps.setAttribute("GenNormals", "false")
         
         # Which map do we bake?
-        if (settings.maptype == 'NORMAL'):
+        if settings.maptype == 'NORMAL':
             s = settings.NORMAL_settings
             xml_genmaps.setAttribute("GenNormals", "true")
             xml_genmaps.setAttribute("SwizzleX", str(s.swizzle_x))
@@ -375,7 +384,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             
             xml_genmaps.appendChild(generateColorXML(name = 'NMBackgroundColor', vector = s.bgcolor)) 
             
-        elif (settings.maptype == 'HEIGHT'):
+        elif settings.maptype == 'HEIGHT':
             s = settings.HEIGHT_settings
             xml_genmaps.setAttribute("GenHeights", "true")
             xml_genmaps.setAttribute("HeightTonemap", str(s.normalization))
@@ -384,7 +393,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             
             xml_genmaps.appendChild(generateColorXML(name = 'HMBackgroundColor', vector = s.bgcolor))
             
-        elif (settings.maptype == 'AMBIENT_OCCLUSION'):
+        elif settings.maptype == 'AMBIENT_OCCLUSION':
             s = settings.AMBIENT_OCCLUSION_settings
             xml_genmaps.setAttribute("GenAO", "true")
             xml_genmaps.setAttribute("AORaysPerSample", str(s.rays))
@@ -403,7 +412,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             xml_genmaps.appendChild(generateColorXML(name = 'AOOccludedColor', vector = s.color_occluded))
             xml_genmaps.appendChild(generateColorXML(name = 'AOUnoccludedColor', vector = s.color_unoccluded))
          
-        elif (settings.maptype == 'BENT_NORMAL'):
+        elif settings.maptype == 'BENT_NORMAL':
             s = settings.BENT_NORMAL_settings
             xml_genmaps.setAttribute("GenBent", "true")
             xml_genmaps.setAttribute("BentRaysPerSample", str(s.rays))
@@ -419,7 +428,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             
             xml_genmaps.appendChild(generateColorXML(name = 'BentBackgroundColor', vector = s.bgcolor))
         
-        elif (settings.maptype == 'PRTPN'):
+        elif settings.maptype == 'PRTPN':
             s = settings.PRTPN_settings
             xml_genmaps.setAttribute("GenPRT", "true")
             xml_genmaps.setAttribute("PRTRaysPerSample", str(s.rays))
@@ -432,18 +441,18 @@ class OBJECT_OT_bake_with_xnormal(Operator):
         
             xml_genmaps.appendChild(generateColorXML(name = 'PRTBackgroundColor', vector = s.bgcolor))
         
-        elif (settings.maptype == 'CONVEXITY'):
+        elif settings.maptype == 'CONVEXITY':
             s = settings.CONVEXITY_settings
             xml_genmaps.setAttribute("GenConvexity", "true")
             xml_genmaps.setAttribute("ConvexityScale", str(s.convexity_scale))
             
             xml_genmaps.appendChild(generateColorXML(name = 'ConvexityBackgroundColor', vector = s.bgcolor))
         
-        elif (settings.maptype == 'THICKNESS'):
+        elif settings.maptype == 'THICKNESS':
             # Has no properties
             xml_genmaps.setAttribute("GenThickness", "true")
            
-        elif (settings.maptype == 'PROXIMITY'):
+        elif settings.maptype == 'PROXIMITY':
             s = settings.PROXIMITY_settings
             xml_genmaps.setAttribute("GenProximity", "true")
             xml_genmaps.setAttribute("ProximityRaysPerSample", str(s.rays))
@@ -452,7 +461,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             
             xml_genmaps.appendChild(generateColorXML(name = 'ProximityBackgroundColor', vector = s.bgcolor))
         
-        elif (settings.maptype == 'CAVITY'):
+        elif settings.maptype == 'CAVITY':
             s = settings.CAVITY_settings
             xml_genmaps.setAttribute("GenCavity", "true")
             xml_genmaps.setAttribute("CavityRaysPerSample", str(s.rays))
@@ -463,7 +472,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
         
             xml_genmaps.appendChild(generateColorXML(name = 'CavityBackgroundColor', vector = s.bgcolor))
         
-        elif (settings.maptype == 'WIREFRAME_RAY_FAILS'):
+        elif settings.maptype == 'WIREFRAME_RAY_FAILS':
             s = settings.WIREFRAME_RAY_FAILS_settings
             xml_genmaps.setAttribute("GenWireRays", "true")
             xml_genmaps.setAttribute("RenderRayFails", bool2str(s.render_ray_fails))
@@ -475,7 +484,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             xml_genmaps.appendChild(generateColorXML(name = 'RenderRayFailsCol', vector = s.color_rayfail))
             xml_genmaps.appendChild(generateColorXML(name = 'RenderWireframeBackgroundColor', vector = s.bgcolor))
         
-        elif (settings.maptype == 'DIRECTION'):
+        elif settings.maptype == 'DIRECTION':
             s = settings.DIRECTION_settings
             xml_genmaps.setAttribute("GenDirections", "true")
             xml_genmaps.setAttribute("DirectionsTS", bool2str(s.tangentspace))
@@ -488,7 +497,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             
             xml_genmaps.appendChild(generateColorXML(name = 'VDMBackgroundColor', vector = s.bgcolor))
         
-        elif (settings.maptype == 'RADIOSITY_NORMAL'):
+        elif settings.maptype == 'RADIOSITY_NORMAL':
             s = settings.RADIOSITY_NORMAL_settings
             xml_genmaps.setAttribute("GenRadiosityNormals", "true")
             xml_genmaps.setAttribute("RadiosityNormalsRaysPerSample", str(s.rays))
@@ -507,14 +516,14 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             
             xml_genmaps.appendChild(generateColorXML(name = 'RadNMBackgroundColor', vector = s.bgcolor))
             
-        elif (settings.maptype == 'VERTEX_COLOR'):
+        elif settings.maptype == 'VERTEX_COLOR':
             s = settings.VERTEX_COLOR_settings
             # Has no further properties
             xml_genmaps.setAttribute("BakeHighpolyVCols", "true")
             
             xml_genmaps.appendChild(generateColorXML(name = 'BakeHighpolyVColsBackgroundCol', vector = s.bgcolor))
         
-        elif (settings.maptype == 'CURVATURE'):
+        elif settings.maptype == 'CURVATURE':
             s = settings.CURVATURE_settings
             xml_genmaps.setAttribute("GenCurv", "true")
             xml_genmaps.setAttribute("CurvRaysPerSample", str(s.rays))
@@ -529,7 +538,7 @@ class OBJECT_OT_bake_with_xnormal(Operator):
             
             xml_genmaps.appendChild(generateColorXML(name = 'CurvBackgroundColor', vector = s.bgcolor))
             
-        elif (settings.maptype == 'DERIVATIVE'):
+        elif settings.maptype == 'DERIVATIVE':
             s = settings.DERIVATIVE_settings
             # Has no further properties
             xml_genmaps.setAttribute("GenDerivNM", "true")
@@ -552,7 +561,8 @@ class OBJECT_OT_bake_with_xnormal(Operator):
         temporary_xml_file.close()
         
         return {'FINISHED'}
-    
+
+
 class OBJECT_PT_xnormal(Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -630,7 +640,7 @@ class OBJECT_PT_xnormal(Panel):
         elif settings.maptype == 'HEIGHT':
             box.prop(settings.HEIGHT_settings, 'normalization')
             
-            if (settings.HEIGHT_settings.normalization == 'Manual'):
+            if settings.HEIGHT_settings.normalization == 'Manual':
                 row = box.row()
                 row.prop(settings.HEIGHT_settings, 'min')
                 row.prop(settings.HEIGHT_settings, 'min')
@@ -743,7 +753,7 @@ class OBJECT_PT_xnormal(Panel):
             box.prop(settings.DIRECTION_settings, 'tangentspace')
             box.prop(settings.DIRECTION_settings, 'normalization')
             
-            if (settings.DIRECTION_settings.normalization == 'Manual'):
+            if settings.DIRECTION_settings.normalization == 'Manual':
                 row = box.row()
                 row.prop(settings.DIRECTION_settings, 'min')
                 row.prop(settings.DIRECTION_settings, 'min')
@@ -835,7 +845,8 @@ class OBJECT_PT_xnormal(Panel):
         box.prop(settings, 'high_normals')
         box.prop(settings, 'high_path')
         box.operator('export_scene.obj_for_xnormal_high')
-            
+
+
 def register():
     register_class(OBJECT_OP_open_bake_dir)
     register_class(OBJECT_OT_export_for_xnormal_low)
