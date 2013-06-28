@@ -257,7 +257,7 @@ class Export_for_xnormal(Operator):
         bpy.ops.export_scene.obj(
                                  filepath = self.filepath,
                                  use_selection = True,
-                                 use_apply_modifiers = True,
+                                 use_mesh_modifiers = True,
                                  use_edges = True,
                                  use_normals = True,
                                  use_uvs = True,
