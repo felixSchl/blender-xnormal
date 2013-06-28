@@ -18,10 +18,14 @@ else:
 
 import bpy
 from bpy.props import *
-from bpy.types import Panel, Operator
+from bpy.types import Panel, Operator, AddonPreferences
 from bpy.utils import register_class, unregister_class
 import os
 import math
+
+
+def getPrefs(ctx):
+    return ctx.user_preferences.addons[__name__].preferences
 
 
 def bool2str(boolean):
@@ -40,7 +44,19 @@ def ensure_dir(directory):
             return False
 
 
-# Add settings to scene
+class BakeXNormalPreferences(AddonPreferences):
+    bl_idname = __name__
+    path_to_xNormal = StringProperty(name = 'Path to xNormal',
+                                     description = 'The full path to the xNormal executable',
+                                     default = '',
+                                     subtype = 'FILE_PATH'
+                                     )
+
+    def draw(self, ctx):
+        l = self.layout
+        l.prop(self, "path_to_xNormal")
+
+
 class BakeXNormalSettings(bpy.types.PropertyGroup):
     
     maptype = EnumProperty(name = 'Map type',
@@ -64,13 +80,6 @@ class BakeXNormalSettings(bpy.types.PropertyGroup):
                                     ('DERIVATIVE', 'Derivate Map', ''),
                                     ),
                            )
-
-    # Paths
-    path_to_xNormal = StringProperty(name = 'Path to xNormal',
-                                     description = 'The full path to the xNormal executable',
-                                     default = '',
-                                     subtype = 'FILE_PATH'
-                                     )
 
     selected_to_active = BoolProperty(name = 'Selected to active',
                                       description = 'Last selected object is the low poly model',
@@ -554,7 +563,8 @@ class OBJECT_OT_bake_with_xnormal(Operator):
         
         # Launch xNormal
         import subprocess
-        exe = settings.path_to_xNormal
+        prefs = getPrefs(context)
+        exe = prefs.path_to_xNormal
         command = exe + " " + os.path.join(tempdir, temporary_xml_file.name)
         subprocess.Popen(command)
         
@@ -592,12 +602,6 @@ class OBJECT_PT_xnormal(Panel):
         
         # Show general props first
         box_general = col_all.box()
-        box_general.prop(settings, 'path_to_xNormal', text = 'Xnormal exe')
-
-        # Disable everything if path is not set
-        # @todo: Do proper checking here
-        #if (settings.path_to_xNormal == ''):
-        #    col.enabled = False
 
         # Size
         row = box_general.row(align = True)
@@ -848,6 +852,7 @@ class OBJECT_PT_xnormal(Panel):
 
 
 def register():
+    register_class(BakeXNormalPreferences)
     register_class(OBJECT_OP_open_bake_dir)
     register_class(OBJECT_OT_export_for_xnormal_low)
     register_class(OBJECT_OT_export_for_xnormal_cage)
@@ -857,6 +862,7 @@ def register():
     
 
 def unregister():
+    unregister_class(BakeXNormalPreferences)
     unregister_class(OBJECT_PT_xnormal)
     unregister_class(OBJECT_OP_open_bake_dir)
     unregister_class(OBJECT_OT_bake_with_xnormal)
