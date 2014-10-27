@@ -1,8 +1,8 @@
-# blender-xnormal
+# Blender to X-Normal
 
 > Bridges the gap between Blender and X-Normal
 
-It does so by exposing (nearly) all functionality found in X-Normal directly in Blender.
+[More information](http://felixschlitter.com/tool/blender-xnormal)
 
 ## Getting started
 
